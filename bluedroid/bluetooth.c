@@ -163,7 +163,7 @@ int bt_enable() {
 
     // Try for 10 seconds, this can only succeed once hciattach has sent the
     // firmware and then turned on hci device via HCIUARTSETPROTO ioctl
-    for (attempt = 1000; attempt > 0;  attempt--) {
+    for (attempt = 100; attempt > 0;  attempt--) {
         hci_sock = create_hci_sock();
         if (hci_sock < 0) goto out;
 
@@ -176,8 +176,11 @@ int bt_enable() {
             break;
         }
 
+        ALOGI("%s: ioctl(%d, HCIDEVUP, HCI_DEV_ID) failed: %s (%d)",
+              __FUNCTION__, hci_sock, strerror(errno), errno);
+
         close(hci_sock);
-        usleep(100000);  // 100 ms retry delay
+        usleep(100 * 1000);  // 100 ms retry delay
     }
     if (attempt == 0) {
         LOGE("%s: Timeout waiting for HCI device to come up, error- %d, ",
